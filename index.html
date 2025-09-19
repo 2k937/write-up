@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Write-Up Form</title>
+<style>
+  body { font-family: Arial; margin: 20px; background: #f7f7f7; }
+  h1, h2 { text-align: center; }
+  .section { background: #fff; border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+  label { display: block; margin-top: 10px; font-weight: bold; }
+  input[type="text"], input[type="datetime-local"], textarea { width: 100%; padding: 8px; margin-top: 5px; border-radius: 5px; border: 1px solid #ccc; }
+  textarea { min-height: 80px; resize: vertical; }
+  .checkboxes label { display: block; font-weight: normal; }
+  button { background: #0078D7; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; display: block; margin: 0 auto; }
+  button:hover { background: #005fa3; }
+</style>
+</head>
+<body>
+<h1>STUDENT WRITE-UP FORM</h1>
+<p style="text-align:center;"><b>Dean of Students Office</b></p>
+<hr>
+
+<form id="writeupForm">
+  <div class="section">
+    <h2>BASIC INFORMATION</h2>
+    <label>Date/Time of Incident:</label>
+    <input type="datetime-local" name="incident_datetime" required>
+    <label>Location of Incident:</label>
+    <input type="text" name="location" required>
+    <label>Student(s) Involved (Name/ID):</label>
+    <input type="text" name="students" required>
+    <label>Staff Reporting (Teacher):</label>
+    <input type="text" name="staff" required>
+    <label>Witnesses:</label>
+    <input type="text" name="witnesses">
+  </div>
+
+  <div class="section">
+    <h2>TEACHER NOTES</h2>
+    <textarea name="teacher_notes"></textarea>
+  </div>
+
+  <div class="section">
+    <h2>ADMINISTRATIVE REVIEW</h2>
+    <h3>Nature of Incident</h3>
+    <div class="checkboxes">
+      <label><input type="checkbox" name="incident_type" value="Level 1"> Level 1 – Minor</label>
+      <label><input type="checkbox" name="incident_type" value="Level 2"> Level 2 – Moderate</label>
+      <label><input type="checkbox" name="incident_type" value="Level 3"> Level 3 – Serious</label>
+      <label><input type="checkbox" name="incident_type" value="Level 4"> Level 4 – Severe</label>
+    </div>
+
+    <h3>Action Taken</h3>
+    <div class="checkboxes">
+      <label><input type="checkbox" name="action" value="Verbal Warning"> Verbal Warning</label>
+      <label><input type="checkbox" name="action" value="Parent Notified"> Parent/Guardian Notified</label>
+      <label><input type="checkbox" name="action" value="Detention"> Detention Assigned</label>
+      <label><input type="checkbox" name="action" value="Suspension"> Suspension</label>
+      <label><input type="checkbox" name="action" value="Expulsion"> Expulsion Recommendation</label>
+      <label><input type="checkbox" name="action" value="Police"> Police / SRO Contacted</label>
+      <label><input type="checkbox" name="action" value="EMS"> EMS Called</label>
+    </div>
+
+    <label>Admin Notes:</label>
+    <textarea name="admin_notes"></textarea>
+  </div>
+
+  <div class="section">
+    <h2>SIGNATURES</h2>
+    <label>Reporting Teacher:</label>
+    <input type="text" name="reporting_teacher">
+    <label>Dean of Students:</label>
+    <input type="text" name="dean">
+    <label>Chief Student Affairs / Supervisor:</label>
+    <input type="text" name="supervisor">
+  </div>
+
+  <button type="submit">Submit Write-Up</button>
+</form>
+
+<script>
+const webhookURL = "https://discord.com/api/webhooks/1418704597983166605/SxCPPchnGq47Z4WCl4guOL6ibypylH5LfaXMF4ISPY3TMJvN4svBb228lAEU1DlPwsCv";
+
+document.getElementById('writeupForm').addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const form = e.target;
+  const incidentTypes = Array.from(form.querySelectorAll('[name="incident_type"]:checked')).map(i => i.value);
+  const actions = Array.from(form.querySelectorAll('[name="action"]:checked')).map(i => i.value);
+
+  const content = `
+**STUDENT WRITE-UP**
+**Date/Time:** ${form.incident_datetime.value}
+**Location:** ${form.location.value}
+**Student(s):** ${form.students.value}
+**Staff Reporting:** ${form.staff.value}
+**Witnesses:** ${form.witnesses.value}
+
+**Teacher Notes:** ${form.teacher_notes.value}
+
+**Nature of Incident:** ${incidentTypes.join(", ")}
+**Action Taken:** ${actions.join(", ")}
+**Admin Notes:** ${form.admin_notes.value}
+
+**Signatures**
+Reporting Teacher: ${form.reporting_teacher.value}
+Dean of Students: ${form.dean.value}
+Chief Student Affairs / Supervisor: ${form.supervisor.value}
+  `;
+
+  fetch(webhookURL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content })
+  })
+  .then(res => {
+    if(res.ok){
+      alert("Write-up sent to Discord!");
+      form.reset();
+    } else {
+      alert("Failed to send to Discord.");
+    }
+  })
+  .catch(err => alert("Error: " + err));
+});
+</script>
+</body>
+</html>
